@@ -24,7 +24,7 @@ steps = 252           # Trading days in a year
 dt = T / steps
 n = 500               # Number of simulations
 
-leverage = 3          # Leverage factor
+leverage = 2          # Leverage factor
 
 price_paths = np.zeros((n, steps))
 price_paths_lev = np.zeros((n, steps))
@@ -73,5 +73,3 @@ axes[1].legend(loc="upper right")
 # Adjust layout and show the combined figure
 plt.tight_layout()
 plt.show()
-
-print(price_paths[0])
