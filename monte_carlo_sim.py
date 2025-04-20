@@ -5,13 +5,13 @@ from library.stock import Stock
 from library.price_data import daily_timeseries
 import seaborn as sns
 
-ticker = 'spy'
+ticker = 'tsla'
 data = daily_timeseries(ticker)
 
 stock = Stock(data['Time Series (Daily)'])
 
-annual_vol = stock.annual_volatility()
-annual_return = stock.annual_return()
+annual_vol = stock.annual_volatility(timeframe_years=5)
+annual_return = stock.annual_return(timeframe_years=5)
 
 print(f"Annual Return: {annual_return:.2%}")
 print(f"Annual Volatility: {annual_vol:.2%}")
@@ -24,7 +24,7 @@ steps = 252           # Trading days in a year
 dt = T / steps
 n = 500               # Number of simulations
 
-leverage = 3
+leverage = 3          # Leverage factor
 
 price_paths = np.zeros((n, steps))
 price_paths_lev = np.zeros((n, steps))
