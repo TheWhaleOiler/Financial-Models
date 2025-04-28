@@ -17,7 +17,7 @@ stock = Stock(data['Time Series (Daily)'])
 
 ######################################
 # PARAMETERS
-years = 1             # Time in years
+years = 5             # Time in years
 annual_vol = stock.annual_volatility(timeframe_years=5)
 annual_return = stock.annual_return(timeframe_years=5)
 
