@@ -20,9 +20,9 @@ S0 = 100              # Initial price
 mu = annual_return    # Expected return (annual)
 sigma = annual_vol    # Volatility (annual)
 T = 5                 # Time in years
-steps = 252           # Trading days in a year
-dt = T / steps
-n = 500               # Number of simulations
+steps = 252 * T       # Trading days in a year
+dt = 1/252            # Time step (in years)
+n = 1000               # Number of simulations
 
 leverage = 2          # Leverage factor
 
@@ -37,7 +37,7 @@ for t in range(1, steps):
 
 for t in range(1, steps):
     z = np.random.normal(0, 1, n)
-    price_paths_lev[:, t] = price_paths_lev[:, t-1] * np.exp(leverage*(mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z)
+    price_paths_lev[:, t] = price_paths_lev[:, t-1] * np.exp( leverage * (mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z)
 
 mean_regular = np.mean(price_paths[:, -1])
 mean_leveraged = np.mean(price_paths_lev[:, -1])
