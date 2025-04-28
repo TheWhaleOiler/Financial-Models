@@ -10,14 +10,14 @@ import seaborn as sns
 # Leveraged vs Regular
 ########################################
 
-ticker = 'tsla'
+ticker = 'spy'
 data = daily_timeseries(ticker,get_cache=True)
 
 stock = Stock(data['Time Series (Daily)'])
 
 ######################################
 # PARAMETERS
-years = 5             # Time in years
+years = 1             # Time in years
 annual_vol = stock.annual_volatility(timeframe_years=5)
 annual_return = stock.annual_return(timeframe_years=5)
 
@@ -30,7 +30,7 @@ sigma = annual_vol    # Volatility (annual)
 steps = 252 * years   # Trading days in a year
 dt = 1/252            # Time step (in years)
 n = 1000              # Number of simulations
-leverage = 2          # Leverage factor
+leverage = 3          # Leverage factor
 
 # END PARAMETERS
 #######################################
@@ -44,15 +44,28 @@ for t in range(1, steps):
     z = np.random.normal(0, 1, n)
 
     daily_return = (mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z
+
     price_paths[:, t] = price_paths[:, t-1] * np.exp(daily_return)
     price_paths_lev[:, t] = price_paths_lev[:, t-1] * np.exp(daily_return * leverage)
-    
 
-mean_regular = np.mean(price_paths[:, -1])
-mean_leveraged = np.mean(price_paths_lev[:, -1])
+geometric_means_regular = (price_paths[:, -1] / price_paths[:, 0]) ** (1 / years) - 1
+geometric_means_leveraged = (price_paths_lev[:, -1] / price_paths_lev[:, 0]) ** (1 / years) - 1
+
+avg_geometric_mean_regular = np.mean(geometric_means_regular)
+avg_geometric_mean_leveraged = np.mean(geometric_means_leveraged)
+
+log_mean_regular = np.exp(np.mean(np.log(price_paths[:, -1])))
+log_mean_leveraged = np.exp(np.mean(np.log(price_paths_lev[:, -1])))
 
 median_regular = np.median(price_paths[:, -1])
 median_leveraged = np.median(price_paths_lev[:, -1])
+
+print(f"Log Average (Regular): {log_mean_regular:.2f}")
+print(f"Log Average ({leverage}x Leveraged): {log_mean_leveraged:.2f}")
+
+print(f"Annualized Average Geometric Mean (Regular): {avg_geometric_mean_regular:.2%}")
+print(f"Annualized Average Geometric Mean ({leverage}x Leveraged): {avg_geometric_mean_leveraged:.2%}")
+
 
 # Create a figure with subplots
 fig, axes = plt.subplots(2, 1, figsize=(12, 10), gridspec_kw={'height_ratios': [3, 1]})
@@ -69,13 +82,15 @@ axes[0].set_ylabel("Price")
 axes[0].legend(loc="upper left")
 
 # Plot the distribution of final prices on the second subplot
+axes[1].set_xscale('log')
 sns.histplot(price_paths[:, -1], bins=50, color='blue', kde=True, label='Regular' if i == 0 else "", ax=axes[1])
 sns.histplot(price_paths_lev[:, -1], bins=50, color='red', kde=True, label=f'{leverage}x Leveraged' if i == 0 else "", ax=axes[1])
 
+
 # Highlight the mean of each distribution
-axes[1].axvline(mean_regular, color='blue', linestyle='-', linewidth=2, label=f'Regular Mean: {mean_regular:.2f}')
+axes[1].axvline(log_mean_regular, color='blue', linestyle='-', linewidth=2, label=f'Regular Log Mean: {log_mean_regular:.2f}')
 axes[1].axvline(median_regular, color='blue', linestyle='--', linewidth=2, label=f'Regular Median: {median_regular:.2f}')
-axes[1].axvline(mean_leveraged, color='red', linestyle='-', linewidth=2, label=f'{leverage}x Leveraged Mean: {mean_leveraged:.2f}')
+axes[1].axvline(log_mean_leveraged, color='red', linestyle='-', linewidth=2, label=f'{leverage}x Leveraged Log Mean: {log_mean_leveraged:.2f}')
 axes[1].axvline(median_leveraged, color='red', linestyle='--', linewidth=2, label=f'{leverage}x Leveraged Median: {median_leveraged:.2f}')
 
 # Add labels, title, and legend to the second subplot
