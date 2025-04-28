@@ -17,6 +17,10 @@ def daily_timeseries(ticker: str, get_cache: bool = True) -> dict:
     r = requests.get(url)
     data = r.json()
 
+    if("information" in data):
+        print("API limit reached, please try again later")
+        return None
+
     with open(f'cache/{ticker}_daily_time_series.json', 'w') as f:
         json.dump(data, f)
 
