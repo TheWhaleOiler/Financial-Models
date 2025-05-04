@@ -10,30 +10,31 @@ import seaborn as sns
 # Leveraged vs Regular
 ########################################
 
-ticker = 'spy'
+ticker = 'tsla'
 data = daily_timeseries(ticker,get_cache=True)
 
 stock = Stock(data['Time Series (Daily)'])
 
 ######################################
 # PARAMETERS
-years = 1             # Time in years
-annual_vol = stock.annual_volatility(timeframe_years=5)
-annual_return = stock.annual_return(timeframe_years=5)
+years = 5             # Time in years
+annual_return = stock.annual_return(timeframe_years=years) 
+annual_vol    = stock.annual_volatility(timeframe_years=years)
 
-print(f"Annual Return: {annual_return:.2%}")
-print(f"Annual Volatility: {annual_vol:.2%}")
 
 S0 = 100              # Initial price
 mu = annual_return    # Expected return (annual)
 sigma = annual_vol    # Volatility (annual)
 steps = 252 * years   # Trading days in a year
 dt = 1/252            # Time step (in years)
-n = 1000              # Number of simulations
-leverage = 3          # Leverage factor
+n = 5000              # Number of simulations
+leverage = 2          # Leverage factor
 
 # END PARAMETERS
 #######################################
+
+print(f" Annual Return: {annual_return:.2%}")
+print(f" Annual Volatility: {annual_vol:.2%}")
 
 price_paths = np.zeros((n, steps))
 price_paths_lev = np.zeros((n, steps))
@@ -48,23 +49,46 @@ for t in range(1, steps):
     price_paths[:, t] = price_paths[:, t-1] * np.exp(daily_return)
     price_paths_lev[:, t] = price_paths_lev[:, t-1] * np.exp(daily_return * leverage)
 
+
 geometric_means_regular = (price_paths[:, -1] / price_paths[:, 0]) ** (1 / years) - 1
 geometric_means_leveraged = (price_paths_lev[:, -1] / price_paths_lev[:, 0]) ** (1 / years) - 1
-
-avg_geometric_mean_regular = np.mean(geometric_means_regular)
-avg_geometric_mean_leveraged = np.mean(geometric_means_leveraged)
 
 log_mean_regular = np.exp(np.mean(np.log(price_paths[:, -1])))
 log_mean_leveraged = np.exp(np.mean(np.log(price_paths_lev[:, -1])))
 
+log_returns = np.log(price_paths[:, 1:] / price_paths[:, :-1])
+log_returns_lev = np.log(price_paths_lev[:, 1:] / price_paths_lev[:, :-1])
+
+daily_vols = np.std(log_returns, axis=1)
+daily_vols_lev = np.std(log_returns_lev, axis=1)
+
+annualized_vols = daily_vols * np.sqrt(252)
+annualized_vols_lev = daily_vols_lev * np.sqrt(252)
+
+med_vol = np.median(annualized_vols)
+med_vol_lev = np.median(annualized_vols_lev)
+
+
+median_geometric_mean_regular = np.median(geometric_means_regular)
+median_geometric_mean_leveraged = np.median(geometric_means_leveraged)
+
 median_regular = np.median(price_paths[:, -1])
 median_leveraged = np.median(price_paths_lev[:, -1])
 
-print(f"Log Average (Regular): {log_mean_regular:.2f}")
-print(f"Log Average ({leverage}x Leveraged): {log_mean_leveraged:.2f}")
+regular_calculated_geometric_return = mu - 0.5 * sigma**2
+leverage_calculated_geometric_return = leverage*mu - 0.5 * (leverage * sigma)**2
 
-print(f"Annualized Average Geometric Mean (Regular): {avg_geometric_mean_regular:.2%}")
-print(f"Annualized Average Geometric Mean ({leverage}x Leveraged): {avg_geometric_mean_leveraged:.2%}")
+print()
+print(f" Log Average (Regular): {log_mean_regular:.2f}")
+print(f" Log Average ({leverage}x Leveraged): {log_mean_leveraged:.2f}")
+print()
+print(f" Annualized Median Volatility (Regular): {med_vol:.2%}")
+print(f" Annualized Median Volatility ({leverage}x Leveraged): {med_vol_lev:.2%}")
+print(f" Annualized Median Geometric Return (Regular): {median_geometric_mean_regular:.2%}")
+print(f" Annualized Median Geometric Return ({leverage}x Leveraged): {median_geometric_mean_leveraged:.2%}")
+
+print(f" Theoretical Geometric Return: {regular_calculated_geometric_return:.2%}")
+print(f" Theoretical Geometric Return ({leverage}x Leveraged): {leverage_calculated_geometric_return:.2%}")
 
 
 # Create a figure with subplots
