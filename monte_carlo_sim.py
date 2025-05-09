@@ -46,6 +46,8 @@ for t in range(1, steps):
 
     # Made the math eaiser to read and should be mathematically equivalent. I hope.
     # daily_return = (mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z
+    # price_paths[:, t] = price_paths[:, t-1] * np.exp(daily_return)
+
     daily_return = mu * dt + sigma * np.sqrt(dt) * z
 
     price_paths[:, t] = price_paths[:, t-1] * (1 + daily_return)
