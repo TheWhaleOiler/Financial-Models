@@ -17,7 +17,7 @@ stock = Stock(data['Time Series (Daily)'])
 
 ######################################
 # PARAMETERS
-years = 5             # Time in years
+years = 4             # Time in years
 annual_return = stock.annual_return(timeframe_years=years) 
 annual_vol    = stock.annual_volatility(timeframe_years=years)
 
@@ -44,10 +44,12 @@ price_paths_lev[:, 0] = S0
 for t in range(1, steps):
     z = np.random.normal(0, 1, n)
 
-    daily_return = (mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z
+    # Made the math eaiser to read and should be mathematically equivalent. I hope.
+    # daily_return = (mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z
+    daily_return = mu * dt + sigma * np.sqrt(dt) * z
 
-    price_paths[:, t] = price_paths[:, t-1] * np.exp(daily_return)
-    price_paths_lev[:, t] = price_paths_lev[:, t-1] * np.exp(daily_return * leverage)
+    price_paths[:, t] = price_paths[:, t-1] * (1 + daily_return)
+    price_paths_lev[:, t] = price_paths_lev[:, t-1] * (1 + leverage * daily_return)
 
 
 geometric_means_regular = (price_paths[:, -1] / price_paths[:, 0]) ** (1 / years) - 1
@@ -75,12 +77,15 @@ median_geometric_mean_leveraged = np.median(geometric_means_leveraged)
 median_regular = np.median(price_paths[:, -1])
 median_leveraged = np.median(price_paths_lev[:, -1])
 
+print(f" Mean Price (Regular): {np.mean(price_paths[:, -1]):.2f}")
+print(f" Mean Price ({leverage}x Leveraged): {np.mean(price_paths_lev[:, -1]):.2f}")
+
 regular_calculated_geometric_return = mu - 0.5 * sigma**2
 leverage_calculated_geometric_return = leverage*mu - 0.5 * (leverage * sigma)**2
 
 print()
-print(f" Log Average (Regular): {log_mean_regular:.2f}")
-print(f" Log Average ({leverage}x Leveraged): {log_mean_leveraged:.2f}")
+print(f" Log Average Price (Regular): {log_mean_regular:.2f}")
+print(f" Log Average Price ({leverage}x Leveraged): {log_mean_leveraged:.2f}")
 print()
 print(f" Annualized Median Volatility (Regular): {med_vol:.2%}")
 print(f" Annualized Median Volatility ({leverage}x Leveraged): {med_vol_lev:.2%}")
