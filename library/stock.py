@@ -22,7 +22,7 @@ class Stock():
     def __init__(self, price_data):
         self.price_data = price_data
 
-    def annual_volatility(self, timeframe_years=1) -> float:
+    def annualized_volatility(self, timeframe_years=1) -> float:
         prices = pd.Series([CandleStick(date,
                                         self.price_data[date]['1. open'],
                                         self.price_data[date]['2. high'],
@@ -43,7 +43,7 @@ class Stock():
 
         return annual_vol
     
-    def annual_return(self, timeframe_years=1) -> float:
+    def annualized_return(self, timeframe_years=1) -> float:
         prices = pd.Series([CandleStick(date,
                                         self.price_data[date]['1. open'],
                                         self.price_data[date]['2. high'],

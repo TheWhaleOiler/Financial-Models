@@ -10,16 +10,16 @@ import seaborn as sns
 # Leveraged vs Regular
 ########################################
 
-ticker = 'tsla'
+ticker = 'SPY'
 data = daily_timeseries(ticker,get_cache=True)
 
 stock = Stock(data['Time Series (Daily)'])
 
 ######################################
 # PARAMETERS
-years = 4             # Time in years
-annual_return = stock.annual_return(timeframe_years=years) 
-annual_vol    = stock.annual_volatility(timeframe_years=years)
+years = 1            # Time in years
+annual_return = stock.annualized_return(timeframe_years=years) 
+annual_vol    = stock.annualized_volatility(timeframe_years=years)
 
 
 S0 = 100              # Initial price
@@ -28,7 +28,7 @@ sigma = annual_vol    # Volatility (annual)
 steps = 252 * years   # Trading days in a year
 dt = 1/252            # Time step (in years)
 n = 5000              # Number of simulations
-leverage = 2          # Leverage factor
+leverage = 3          # Leverage factor
 
 # END PARAMETERS
 #######################################
@@ -44,14 +44,15 @@ price_paths_lev[:, 0] = S0
 for t in range(1, steps):
     z = np.random.normal(0, 1, n)
 
-    # Made the math eaiser to read and should be mathematically equivalent. I hope.
-    # daily_return = (mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z
-    # price_paths[:, t] = price_paths[:, t-1] * np.exp(daily_return)
+    # THE MATH WAS NOT EQUIVALENT WTF
+    # daily_return = mu * dt + sigma * np.sqrt(dt) * z
+    # price_paths[:, t] = price_paths[:, t-1] * (1 + daily_return)
+    # price_paths_lev[:, t] = price_paths_lev[:, t-1] * (1 + leverage * daily_return)
 
-    daily_return = mu * dt + sigma * np.sqrt(dt) * z
+    daily_return = (mu - 0.5 * sigma**2) * dt + sigma * np.sqrt(dt) * z
 
-    price_paths[:, t] = price_paths[:, t-1] * (1 + daily_return)
-    price_paths_lev[:, t] = price_paths_lev[:, t-1] * (1 + leverage * daily_return)
+    price_paths[:, t] = price_paths[:, t-1] * np.exp(daily_return)
+    price_paths_lev[:, t] = price_paths_lev[:, t-1] * np.exp(leverage * daily_return)
 
 
 geometric_means_regular = (price_paths[:, -1] / price_paths[:, 0]) ** (1 / years) - 1
