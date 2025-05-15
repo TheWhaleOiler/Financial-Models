@@ -31,6 +31,9 @@ class Stock():
                                             ) 
                             for date in self.price_data])
         
+        if(len(prices) < 252 * timeframe_years):
+            raise ValueError(f"Not enough data for {timeframe_years} years. Available data: {len(prices) / 252:.2f} years.")
+
         prices = prices.iloc[:252 * timeframe_years]
 
         gross_return = pd.Series([candle.close_price for candle in (prices / prices.shift(1)).dropna() ])
@@ -52,6 +55,9 @@ class Stock():
                                             ) 
                             for date in self.price_data])
         
+        if(len(prices) < 252 * timeframe_years):
+            raise ValueError(f"Not enough data for {timeframe_years} years. Available data: {len(prices) / 252:.2f} years.")
+
         prices = prices.iloc[:252 * timeframe_years]
 
         start_price = prices.iloc[-1].close_price

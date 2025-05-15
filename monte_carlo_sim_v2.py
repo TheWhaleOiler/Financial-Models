@@ -10,14 +10,14 @@ import seaborn as sns
 # Leveraged vs Regular
 ########################################
 
-ticker = 'nvda'
+ticker = 'spy'
 data = daily_timeseries(ticker,get_cache=True)
 
 stock = Stock(data['Time Series (Daily)'])
 
 ######################################
 # PARAMETERS
-years = 4            # Time in years
+years = 23            # Time in years
 annual_return = stock.annualized_return(timeframe_years=years) 
 annual_vol    = stock.annualized_volatility(timeframe_years=years)
 
@@ -57,7 +57,6 @@ for t in range(1, steps):
     price_paths[:, t] = price_paths[:, t-1] * (1 + daily_return)
     price_paths_lev[:, t] = price_paths_lev[:, t-1] * (1 + leveraged_daily_return)
 
-print("Any negative values in price_paths_lev?", np.any(price_paths_lev < 0))
 
 geometric_means_regular = (price_paths[:, -1] / price_paths[:, 0]) ** (1 / years) - 1
 geometric_means_leveraged = (price_paths_lev[:, -1] / price_paths_lev[:, 0]) ** (1 / years) - 1
