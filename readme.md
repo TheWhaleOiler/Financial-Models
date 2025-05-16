@@ -65,3 +65,5 @@ Even if annual return is positive, the original model utilized the discretized f
 where a high sigma value can turn the drift factor `(μ - 0.5 * σ**2) * dt` into a negative value which will tend towards zero since it's being added to normally distributed white noise `σ * np.sqrt(dt) * z`
 
 Even if a stock has an annual return of 50%(`0.5 = μ`), if the volatility were 100%(`1 = σ`), the drift factor in GBM will become zero and the stock will be modeled by the randomly distributed white noise
+
+![image](https://github.com/user-attachments/assets/76c92690-914c-41ff-a497-5e0b823de891)
