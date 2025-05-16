@@ -17,7 +17,7 @@ stock = Stock(data['Time Series (Daily)'])
 
 ######################################
 # PARAMETERS
-years = 23            # Time in years
+years = 4            # Time in years
 annual_return = stock.annualized_return(timeframe_years=years) 
 annual_vol    = stock.annualized_volatility(timeframe_years=years)
 
@@ -28,7 +28,7 @@ sigma = annual_vol    # Volatility (annual)
 steps = 252 * years   # Trading days in a year
 dt = 1/252            # Time step (in years)
 n = 5000              # Number of simulations
-leverage = 3          # Leverage factor
+leverage = 2          # Leverage factor
 
 # END PARAMETERS
 #######################################
@@ -42,12 +42,25 @@ price_paths[:, 0] = S0
 price_paths_lev[:, 0] = S0
 
 
+# We know there exists an equation:
+# (1 + mu_daily)^252 = (1 + mu_yearly)
+# Where we can apply ln to both sides:
+# ln(1 + mu_daily) * 252 = ln(1 + mu_yearly)
+# ln(1 + mu_daily) = ln(1 + mu_yearly) * 1/252
+mu_geom_daily = np.log(1 + mu) * dt
+
+# We can also calculate sigma_daily as:
+# sigma_daily = sigma * sqrt(dt)
+sigma_daily = sigma / np.sqrt(252)
+
+# Due to ito's lemma, and more math bullshit (https://en.wikipedia.org/wiki/Geometric_Brownian_motion#Solving_the_SDE)
+# We have this equation:
+# d(ln(St)) = (mu - 0.5 * sigma^2) * dt + sigma * dW
+# Where mu_geom = mu - 0.5 * sigma^2
+# rearranging gives us:
+mu_daily = mu_geom_daily + 0.5 * sigma_daily**2
+
 for t in range(1, steps):
-
-    mu_geom_daily = np.log(1 + mu) * dt
-    sigma_daily = sigma / np.sqrt(252)
-    mu_daily = mu_geom_daily + 0.5 * sigma_daily**2
-
     daily_return = np.random.normal(mu_daily, sigma_daily, n)
 
     # Discard any returns <= -1 
@@ -56,7 +69,6 @@ for t in range(1, steps):
 
     price_paths[:, t] = price_paths[:, t-1] * (1 + daily_return)
     price_paths_lev[:, t] = price_paths_lev[:, t-1] * (1 + leveraged_daily_return)
-
 
 geometric_means_regular = (price_paths[:, -1] / price_paths[:, 0]) ** (1 / years) - 1
 geometric_means_leveraged = (price_paths_lev[:, -1] / price_paths_lev[:, 0]) ** (1 / years) - 1
