@@ -10,16 +10,17 @@ import seaborn as sns
 # Leveraged vs Regular
 ########################################
 
-ticker = 'spy'
-data = daily_timeseries(ticker,get_cache=True)
+ticker = 'NVDA'
+data = daily_timeseries(ticker,get_cache=False)
 
 stock = Stock(data['Time Series (Daily)'])
 
 ######################################
-# PARAMETERS
-years = 4            # Time in years
-annual_return = stock.annualized_return(timeframe_years=years) 
-annual_vol    = stock.annualized_volatility(timeframe_years=years)
+# PARAMETERS For Nvida(1Y)
+######################################
+years = 5            # Time in years
+annual_return = 0.4289 # stock.annualized_return(timeframe_years=1) 
+annual_vol    = 0.601  # stock.annualized_volatility(timeframe_years=1)
 
 
 S0 = 100              # Initial price
